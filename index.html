@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Berita Acara Buka Segel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+            color: #000;
+        }
+
+        .paper {
+            background-color: #fff;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 20mm 15mm;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Kop Surat Styles */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-bottom: 3px double #000;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .header-logo {
+            width: 100px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .header-logo img {
+            width: 85px;
+            height: auto;
+        }
+
+        .header-text {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .header-text h3 {
+            margin: 0;
+            font-size: 13pt;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text h2 {
+            margin: 2px 0;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .header-text h4 {
+            margin: 0;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        .header-text p {
+            margin: 2px 0;
+            font-size: 8pt;
+        }
+
+        /* Document Title */
+        .doc-title {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .doc-title h3 {
+            margin: 0;
+            font-size: 12pt;
+            text-decoration: underline;
+        }
+
+        .doc-title p {
+            margin: 3px 0 0 0;
+            font-size: 11pt;
+        }
+
+        /* Form Controls styling */
+        input[type="text"], 
+        input[type="number"], 
+        input[type="date"],
+        textarea,
+        select {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            border: none;
+            border-bottom: 1px dotted #555;
+            outline: none;
+            background: transparent;
+            padding: 2px 5px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            background-color: #f0f8ff;
+            border-bottom: 1px solid #000;
+        }
+
+        .inline-input {
+            display: inline-block;
+        }
+
+        /* Content Sections */
+        .section-text {
+            font-size: 11pt;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        /* Table Styling */
+        table.form-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 11pt;
+        }
+
+        table.form-table th, 
+        table.form-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            vertical-align: top;
+        }
+
+        .no-border-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .no-border-table td {
+            border: none !important;
+            padding: 3px 0;
+        }
+
+        /* Action Controls Bar */
+        .action-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .btn {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #0369a1;
+        }
+
+        .btn-reset {
+            background-color: #ef4444;
+        }
+
+        .btn-reset:hover {
+            background-color: #dc2626;
+        }
+
+        /* Footnote */
+        .footnote {
+            font-size: 9pt;
+            margin-top: 20px;
+        }
+
+        /* Signature Canvas Styling */
+        .signature-container {
+            display: inline-block;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .signature-pad {
+            border: 1px dashed #888;
+            border-radius: 4px;
+            background-color: #fafafa;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .sig-btn-clear {
+            display: block;
+            margin: 4px auto 0 auto;
+            background: #e5e7eb;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 8px;
+            font-size: 8pt;
+            cursor: pointer;
+            font-family: sans-serif;
+        }
+
+        .sig-btn-clear:hover {
+            background: #d1d5db;
+        }
+
+        .btn-add-witness {
+            display: inline-block;
+            margin-top: 5px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 8px;
+            font-size: 8pt;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+
+        .btn-add-witness:hover {
+            background: #059669;
+        }
+
+        .btn-remove-witness {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 7.5pt;
+            cursor: pointer;
+            font-family: sans-serif;
+            margin-top: 2px;
+        }
+
+        .witness-item {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .paper {
+                box-shadow: none;
+                width: 100%;
+                padding: 0;
+            }
+
+            .action-bar, .sig-btn-clear, .btn-add-witness, .btn-remove-witness {
+                display: none !important;
+            }
+
+            .signature-pad {
+                border: none !important;
+                background: transparent !important;
+            }
+
+            input[type="text"], 
+            input[type="number"], 
+            input[type="date"],
+            textarea,
+            select {
+                border-bottom: none !important;
+                padding: 0;
+            }
+
+            ::placeholder {
+                color: transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+        <button class="btn btn-reset" onclick="resetAllForms()">Reset Form</button>
+        <button class="btn" onclick="window.print()">Cetak / Simpan PDF</button>
+    </div>
+
+    <div class="paper">
+        <!-- Header / Kop Surat -->
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Logo_Badan_Karantina_Indonesia.png/960px-Logo_Badan_Karantina_Indonesia.png?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=thumbnail" id="logo-img" alt="Logo Badan Karantina Indonesia" onerror="this.src='https://placehold.co/100x100/221915/f5b025?text=BARANTIN'">
+                </td>
+                <td class="header-text">
+                    <h3>BADAN KARANTINA INDONESIA</h3>
+                    <h2>BALAI KARANTINA HEWAN, IKAN, DAN TUMBUHAN<br>KALIMANTAN UTARA</h2>
+                    <p>Jl. Yos Sudarso No.11 RT.04, Kel. Lingkas Ujung, Kec. Tarakan Timur, Kota Tarakan - Kalimantan Utara 77126</p>
+                    <p>TELEPON (0551) 21526 , 0811544214 &nbsp;|&nbsp; FAKSIMILE (0551) 36508</p>
+                    <p>WEBSITE: karantinaindonesia.go.id/kalimantanutara &nbsp;|&nbsp; EMAIL: karantinakaltara@karantinaindonesia.co.id</p>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Judul Berita Acara -->
+        <div class="doc-title">
+            <h3>BERITA ACARA PEMBUKAAN SEGEL</h3>
+            <p>Nomor : BA - <input type="text" style="width: 250px;" placeholder="........................................................"></p>
+        </div>
+
+        <!-- Dasar Surat Tugas -->
+        <div class="section-text">
+            Berdasarkan Surat Tugas/ Surat Perintah*) Kepala UPT / Kepala Bagian/ Kepala Sub Bagian*) 
+            <input type="text" style="width: 200px;" placeholder="........................"> 
+            Nomor: <input type="text" style="width: 220px;" placeholder="...................................."> 
+            tanggal: <input type="date">
+        </div>
+
+        <div class="section-text">
+            Kami yang bertanda tangan di bawah ini :
+        </div>
+
+        <!-- Tabel Petugas -->
+        <table class="form-table">
+            <tr>
+                <td style="width: 5%; text-align: center;">1.</td>
+                <td style="width: 25%;">Nama</td>
+                <td style="width: 3%;">:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Pangkat/NIP</td>
+                <td>:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Jabatan</td>
+                <td>:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">2.</td>
+                <td>Nama</td>
+                <td>:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Pangkat/NIP</td>
+                <td>:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Jabatan</td>
+                <td>:</td>
+                <td><input type="text" style="width: 98%;" placeholder="...................................................................................................."></td>
+            </tr>
+        </table>
+
+        <!-- Waktu Pelaksanaan -->
+        <div class="section-text" style="margin-top: 15px;">
+            Pada hari ini <input type="text" style="width: 100px;" placeholder="..............."> 
+            tanggal <input type="text" style="width: 120px;" placeholder="..................."> 
+            bulan <input type="text" style="width: 120px;" placeholder="..................."> 
+            tahun <input type="text" style="width: 100px;" placeholder="..............."> 
+            telah melakukan pembukaan segel yang ditempatkan/ dilekatkan oleh Badan Karantina Indonesia atas :
+        </div>
+
+        <!-- Tabel Rincian -->
+        <table class="form-table">
+            <tr>
+                <td style="width: 5%; font-weight: bold;">a.</td>
+                <td colspan="2" style="font-weight: bold;">Uraian Media Pembawa :</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td style="width: 30%;">- Jenis dan Jumlah MP</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>- Identitas MP</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>- Nama dan identitas Pemilik**)</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">b.</td>
+                <td colspan="2" style="font-weight: bold;">Bangunan/ Tempat TK yang disegel :</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>- Lokasi</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>- Alamat</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>- Nama dan Identitas Pemilik**)</td>
+                <td>: <input type="text" style="width: 95%;" placeholder="........................................................................................."></td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">c.</td>
+                <td style="font-weight: bold;">Keterangan Lainnya:</td>
+                <td><textarea style="width: 98%; height: 50px; resize: vertical;" placeholder="................................................................................................................................................................................"></textarea></td>
+            </tr>
+        </table>
+
+        <!-- Rincian Pembukaan Segel -->
+        <div class="section-text" style="margin-top: 15px;">
+            dengan ini membuka segel <input type="text" style="width: 120px;" placeholder="..................."> 
+            sebanyak <input type="text" style="width: 100px;" placeholder="...................">, 
+            Nomor Segel : <input type="text" style="width: 120px;" placeholder="..................."> 
+            Berita Acara Penyegelan Nomor : BA - <input type="text" style="width: 120px;" placeholder="...................">, 
+            tanggal <input type="text" style="width: 100px;" placeholder="..................."> 
+            pada penempatan/perlekatan segel sebagai berikut :
+        </div>
+
+        <div class="section-text">
+            Pembukaan segel disaksikan oleh :<br>
+            Nama : <input type="text" style="width: 180px;" placeholder="................................">, 
+            alamat : <input type="text" style="width: 250px;" placeholder="........................................................">, 
+            pekerjaan : <input type="text" style="width: 130px;" placeholder="........................"><br>
+            selaku Pemilik/ Kuasa Hukum**) media pembawa/ bangunan/ tempat tindakan karantina*) yang disegel.
+        </div>
+
+        <div class="section-text" style="margin-top: 15px;">
+            Demikian Berita Acara Pembukaan Segel ini dibuat dengan sebenarnya.
+        </div>
+
+        <!-- Tanda Tangan Section -->
+        <table class="no-border-table" style="margin-top: 20px;">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <strong>Yang menyaksikan Pemilik**)</strong><br>
+                    pembukaan segel:<br>
+                    
+                    <div id="witness-list">
+                        <!-- Saksi Utama -->
+                        <div class="witness-item" id="witness-1">
+                            <div class="signature-container">
+                                <canvas id="sig-canvas-1" class="signature-pad" width="230" height="90"></canvas>
+                                <button type="button" class="sig-btn-clear" onclick="clearSignature('sig-canvas-1')">Hapus Tanda Tangan</button>
+                            </div>
+                            <br>
+                            ( <input type="text" style="width: 70%;" placeholder="......................................................"> )
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-witness" onclick="addWitness()">+ Tambah Saksi</button>
+                </td>
+                <td style="width: 50%; text-align: center; vertical-align: top;">
+                    <input type="text" style="width: 140px; text-align: center;" placeholder="........................">, <input type="text" style="width: 120px; text-align: center;" placeholder="................................"><br>
+                    <strong>Yang melakukan</strong><br>
+                    
+                    <!-- Canvas Tanda Tangan Petugas -->
+                    <div class="signature-container">
+                        <canvas id="sig-canvas-2" class="signature-pad" width="230" height="90"></canvas>
+                        <button type="button" class="sig-btn-clear" onclick="clearSignature('sig-canvas-2')">Hapus Tanda Tangan</button>
+                    </div>
+                    <br>
+                    NIP. <input type="text" style="width: 200px;" placeholder=".........................................">
+                </td>
+            </tr>
+        </table>
+
+        <!-- Footnote -->
+        <div class="footnote">
+            *) Coret yang tidak perlu.<br>
+            **) Coret yang tidak perlu, dan dilampirkan foto copy kartu identitas.
+        </div>
+
+    </div>
+
+    <!-- Script Tanda Tangan Digital -->
+    <script>
+        function initSignaturePad(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            ctx.strokeStyle = '#00008b'; // Warna tinta biru tua/hitam
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                isDrawing = true;
+                const pos = getPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const pos = getPos(e);
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            // Touch Events (Untuk Layar Sentuh / HP / Tablet)
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function clearSignature(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        let witnessCount = 1;
+
+        function addWitness() {
+            witnessCount++;
+            const witnessList = document.getElementById('witness-list');
+            const canvasId = `sig-canvas-witness-${witnessCount}`;
+
+            const witnessDiv = document.createElement('div');
+            witnessDiv.className = 'witness-item';
+            witnessDiv.id = `witness-container-${witnessCount}`;
+            witnessDiv.innerHTML = `
+                <div class="signature-container">
+                    <canvas id="${canvasId}" class="signature-pad" width="230" height="90"></canvas>
+                    <div>
+                        <button type="button" class="sig-btn-clear" onclick="clearSignature('${canvasId}')">Hapus Tanda Tangan</button>
+                        <button type="button" class="btn-remove-witness" onclick="removeWitness('witness-container-${witnessCount}')">Hapus Saksi</button>
+                    </div>
+                </div>
+                <br>
+                ( <input type="text" style="width: 70%;" placeholder="......................................................"> )
+            `;
+
+            witnessList.appendChild(witnessDiv);
+            initSignaturePad(canvasId);
+        }
+
+        function removeWitness(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.remove();
+            }
+        }
+
+        function resetAllForms() {
+            if(confirm("Apakah Anda yakin ingin mengosongkan seluruh form dan tanda tangan?")) {
+                window.location.reload();
+            }
+        }
+
+        // Inisialisasi Pad Tanda Tangan setelah Halaman Muat
+        window.onload = function() {
+            initSignaturePad('sig-canvas-1');
+            initSignaturePad('sig-canvas-2');
+        };
+    </script>
+</body>
+</html>
