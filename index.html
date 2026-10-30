@@ -259,6 +259,60 @@
             position: relative;
         }
 
+        /* Modal DB Style */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            font-family: sans-serif;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h3 { margin: 0; font-size: 16px; }
+        .close-modal { cursor: pointer; font-weight: bold; font-size: 18px; }
+
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .db-table th, .db-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .db-table th { background: #f3f4f6; }
+
+        .btn-db-save { background-color: #059669; }
+        .btn-db-save:hover { background-color: #047857; }
+        .btn-db-load { background-color: #d97706; }
+        .btn-db-load:hover { background-color: #b45309; }
+
         /* Print Media Styles */
         @media print {
             body {
@@ -272,7 +326,7 @@
                 padding: 0;
             }
 
-            .action-bar, .sig-btn-clear, .btn-add-witness, .btn-remove-witness {
+            .action-bar, .sig-btn-clear, .btn-add-witness, .btn-remove-witness, .modal-overlay {
                 display: none !important;
             }
 
@@ -300,8 +354,23 @@
 
     <!-- Action Buttons -->
     <div class="action-bar">
+        <button class="btn btn-db-save" onclick="saveToIndexedDB()">Simpan ke DB</button>
+        <button class="btn btn-db-load" onclick="openDBModal()">Lihat Data DB</button>
         <button class="btn btn-reset" onclick="resetAllForms()">Reset Form</button>
         <button class="btn" onclick="window.print()">Cetak / Simpan PDF</button>
+    </div>
+
+    <!-- Modal Data IndexedDB -->
+    <div class="modal-overlay" id="dbModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Daftar Berita Acara Tersimpan (IndexedDB)</h3>
+                <span class="close-modal" onclick="closeDBModal()">&times;</span>
+            </div>
+            <div id="db-list-container">
+                <p>Memuat data...</p>
+            </div>
+        </div>
     </div>
 
     <div class="paper">
@@ -488,6 +557,7 @@
                         <button type="button" class="sig-btn-clear" onclick="clearSignature('sig-canvas-2')">Hapus Tanda Tangan</button>
                     </div>
                     <br>
+                    ( <input type="text" style="width: 200px; text-align: center;" placeholder="........................................."> )<br>
                     NIP. <input type="text" style="width: 200px;" placeholder=".........................................">
                 </td>
             </tr>
@@ -501,16 +571,36 @@
 
     </div>
 
-    <!-- Script Tanda Tangan Digital -->
+    <!-- Script Tanda Tangan & IndexedDB -->
     <script>
+        // IndexedDB Setup
+        let db;
+        const request = indexedDB.open("BeritaAcaraDB", 1);
+
+        request.onupgradeneeded = function(e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("buka_segel")) {
+                db.createObjectStore("buka_segel", { keyPath: "id", autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function(e) {
+            db = e.target.result;
+        };
+
+        request.onerror = function(e) {
+            console.error("IndexedDB Error:", e.target.errorCode);
+        };
+
         function initSignaturePad(canvasId) {
             const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
             let lastX = 0;
             let lastY = 0;
 
-            ctx.strokeStyle = '#00008b'; // Warna tinta biru tua/hitam
+            ctx.strokeStyle = '#00008b';
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -556,13 +646,11 @@
                 isDrawing = false;
             }
 
-            // Mouse Events
             canvas.addEventListener('mousedown', startDrawing);
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDrawing);
             canvas.addEventListener('mouseleave', stopDrawing);
 
-            // Touch Events (Untuk Layar Sentuh / HP / Tablet)
             canvas.addEventListener('touchstart', startDrawing);
             canvas.addEventListener('touchmove', draw);
             canvas.addEventListener('touchend', stopDrawing);
@@ -608,13 +696,157 @@
             }
         }
 
+        // Save & Load Functions for IndexedDB
+        function saveToIndexedDB() {
+            if (!db) {
+                alert("Database belum siap.");
+                return;
+            }
+
+            const inputs = document.querySelectorAll('.paper input, .paper textarea');
+            const formData = {};
+            inputs.forEach((input, index) => {
+                formData['input_' + index] = input.value;
+            });
+
+            // Save signatures
+            const canvases = document.querySelectorAll('.signature-pad');
+            const signatures = [];
+            canvases.forEach(canvas => {
+                signatures.push({
+                    id: canvas.id,
+                    data: canvas.toDataURL()
+                });
+            });
+
+            const record = {
+                timestamp: new Date().toLocaleString('id-ID'),
+                noBA: inputs[0] ? inputs[0].value || 'Tanpa Nomor' : 'Tanpa Nomor',
+                formData: formData,
+                signatures: signatures,
+                witnessCount: witnessCount
+            };
+
+            const tx = db.transaction("buka_segel", "readwrite");
+            const store = tx.objectStore("buka_segel");
+            store.add(record);
+
+            tx.oncomplete = function() {
+                alert("Data Berita Acara berhasil disimpan ke Database Lokal!");
+            };
+        }
+
+        function openDBModal() {
+            document.getElementById('dbModal').style.display = 'flex';
+            loadDBList();
+        }
+
+        function closeDBModal() {
+            document.getElementById('dbModal').style.display = 'none';
+        }
+
+        function loadDBList() {
+            const container = document.getElementById('db-list-container');
+            if (!db) {
+                container.innerHTML = "<p>Database belum siap.</p>";
+                return;
+            }
+
+            const tx = db.transaction("buka_segel", "readonly");
+            const store = tx.objectStore("buka_segel");
+            const request = store.getAll();
+
+            request.onsuccess = function() {
+                const data = request.result;
+                if (data.length === 0) {
+                    container.innerHTML = "<p>Belum ada data tersimpan.</p>";
+                    return;
+                }
+
+                let html = `
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Waktu Simpan</th>
+                                <th>No. BA</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach((item, index) => {
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.timestamp}</td>
+                            <td>${item.noBA}</td>
+                            <td>
+                                <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="loadRecord(${item.id})">Muat</button>
+                                <button class="btn btn-reset" style="padding: 4px 8px; font-size: 11px;" onclick="deleteRecord(${item.id})">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            };
+        }
+
+        function loadRecord(id) {
+            const tx = db.transaction("buka_segel", "readonly");
+            const store = tx.objectStore("buka_segel");
+            const request = store.get(id);
+
+            request.onsuccess = function() {
+                const item = request.result;
+                if (!item) return;
+
+                const inputs = document.querySelectorAll('.paper input, .paper textarea');
+                inputs.forEach((input, index) => {
+                    if (item.formData['input_' + index] !== undefined) {
+                        input.value = item.formData['input_' + index];
+                    }
+                });
+
+                // Load Signatures
+                item.signatures.forEach(sig => {
+                    const canvas = document.getElementById(sig.id);
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = sig.data;
+                    }
+                });
+
+                closeDBModal();
+                alert("Data berhasil dimuat!");
+            };
+        }
+
+        function deleteRecord(id) {
+            if (confirm("Yakin ingin menghapus data ini dari DB?")) {
+                const tx = db.transaction("buka_segel", "readwrite");
+                const store = tx.objectStore("buka_segel");
+                store.delete(id);
+                tx.oncomplete = function() {
+                    loadDBList();
+                };
+            }
+        }
+
         function resetAllForms() {
             if(confirm("Apakah Anda yakin ingin mengosongkan seluruh form dan tanda tangan?")) {
                 window.location.reload();
             }
         }
 
-        // Inisialisasi Pad Tanda Tangan setelah Halaman Muat
         window.onload = function() {
             initSignaturePad('sig-canvas-1');
             initSignaturePad('sig-canvas-2');
